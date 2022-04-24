@@ -1,13 +1,14 @@
-import {initializeApp, messaging} from "firebase-admin";
-import {applicationDefault} from "firebase-admin/app";
+import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import {WordpressHook} from "./type";
 
-export const wordpressPublished = functions.https.onRequest(
-    async (req, res) => {
+export const wordpressPublished = functions
+    .region("asia-northeast2")
+    .https.onRequest(async (req, res) => {
+      admin.initializeApp();
       const hook = req.body as WordpressHook;
       hook.imageUrl = encodeURI(hook.imageUrl);
-      const payload: messaging.TopicMessage = {
+      const payload: admin.messaging.TopicMessage = {
         topic: "wordpress-publish",
         notification: {
           title: hook.title,
@@ -41,12 +42,10 @@ export const wordpressPublished = functions.https.onRequest(
           },
         },
       };
-      initializeApp({credential: applicationDefault()});
       try {
-        await messaging().send(payload);
+        await admin.messaging().send(payload);
       } catch (e) {
         console.log(e);
       }
       res.end();
-    }
-);
+    });
