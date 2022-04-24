@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "kadai-info-flutter"
+    "dev": "kadai-info-app-dev",
+    "stg": "kadai-info-app-stg",
+    "prod": "kadai-info-flutter"
   }
 }
