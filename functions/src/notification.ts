@@ -1,17 +1,20 @@
 import * as admin from "firebase-admin";
-import {applicationDefault} from "firebase-admin/app";
+// import {applicationDefault} from "firebase-admin/app";
 import * as functions from "firebase-functions";
 import {WordpressHook} from "./type";
 
 export const wordpressPublished = functions
     .region("asia-northeast2")
     .https.onRequest(async (req, res) => {
-      if (req.body.local === "true") {
-        admin.initializeApp({credential: applicationDefault()});
-      } else {
+      const hook: WordpressHook = req.body;
+      // if (req.body.local === "true") {
+      //   admin.initializeApp({credential: applicationDefault()});
+      // } else {
+      //   admin.initializeApp();
+      // }
+      if (admin.apps.length === 0) {
         admin.initializeApp();
       }
-      const hook: WordpressHook = req.body;
       const circleInfoPattern = /サークルINFO/;
       if (circleInfoPattern.test(hook.category)) {
         res.end();
