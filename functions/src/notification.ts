@@ -1,12 +1,39 @@
 import * as admin from "firebase-admin";
+import {applicationDefault} from "firebase-admin/app";
 import * as functions from "firebase-functions";
 import {WordpressHook} from "./type";
 
 export const wordpressPublished = functions
     .region("asia-northeast2")
     .https.onRequest(async (req, res) => {
-      admin.initializeApp();
+      if (req.body.local === "true") {
+        admin.initializeApp({credential: applicationDefault()});
+      } else {
+        admin.initializeApp();
+      }
       const hook: WordpressHook = req.body;
+      const circleInfoPattern = /サークルINFO/;
+      if (circleInfoPattern.test(hook.category)) {
+        res.end();
+        return;
+      }
+      if (hook.imageUrl === "") {
+        const now = new Date();
+        try {
+          const url = await admin
+              .storage()
+              .bucket("kadai-info-app")
+              .file("notification/default-image/kadaiinfo.jpg")
+              .getSignedUrl({
+                action: "read",
+                expires: now.setFullYear(now.getFullYear() + 100),
+              });
+          console.log(url.toString());
+          hook.imageUrl = url.toString();
+        } catch (e) {
+          console.log(e);
+        }
+      }
       hook.imageUrl = encodeURI(hook.imageUrl);
       const payload: admin.messaging.TopicMessage = {
         topic: "wordpress-publish",
