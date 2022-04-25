@@ -6,23 +6,30 @@ export const wordpressPublished = functions
     .region("asia-northeast2")
     .https.onRequest(async (req, res) => {
       admin.initializeApp();
-      const hook = req.body as WordpressHook;
+      const hook: WordpressHook = req.body;
       hook.imageUrl = encodeURI(hook.imageUrl);
       const payload: admin.messaging.TopicMessage = {
         topic: "wordpress-publish",
         notification: {
-          title: hook.title,
-          body: hook.desctiption,
+          title: "〈新着記事のお知らせ〉",
+          body: hook.title,
           imageUrl: hook.imageUrl,
         },
         data: {
-          title: JSON.stringify({title: hook.title}),
-          desctiption: JSON.stringify({description: hook.desctiption}),
-          imageUrl: JSON.stringify({imageUrl: hook.imageUrl}),
+          title: hook.title,
+          desctiption: hook.description,
+          imageUrl: hook.imageUrl,
         },
         android: {
           priority: "high",
           notification: {
+            title: "〈新着記事のお知らせ〉",
+            body: hook.title,
+            imageUrl: hook.imageUrl,
+            ticker: "KADAI INFOの通知です",
+            color: "#FFFFFF",
+            tag: hook.title,
+            sticky: true,
             priority: "high",
             visibility: "public",
           },
@@ -33,8 +40,12 @@ export const wordpressPublished = functions
           },
           payload: {
             aps: {
-              mutableContent: true,
-              contentAvailable: true,
+              threadId: hook.title,
+              alert: {
+                title: "〈新着記事のお知らせ〉",
+                subtitle: hook.title,
+                body: hook.description,
+              },
             },
           },
           fcmOptions: {
